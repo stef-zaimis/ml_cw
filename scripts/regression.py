@@ -1,11 +1,12 @@
 import numpy as np
 import pandas as pd
-import torch
 
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
+from torch.optim import Adam
+from torch import from_numpy
 
 # Load the training data
 data = pd.read_csv('/home/stefanos/uni/ml/cw/regression_train.txt', sep=" ", header=None)
@@ -21,8 +22,8 @@ print("Coefficient (slope):", lin_reg.coef_)
 print("Intercept:", lin_reg.intercept_)
 
 # Code Task 11
-x_train_tensor = torch.from_numpy(x_train)
-y_train_tensor = torch.from_numpy(y_train)
+x_train_tensor = from_numpy(x_train).float()
+y_train_tensor = from_numpy(y_train).float().view(-1, 1)
 
 train_dataset = TensorDataset(x_train_tensor, y_train_tensor)
 train_dataloader = DataLoader(train_dataset, batch_size=16, shuffle=True)
@@ -43,11 +44,11 @@ class NeuralNetwork(nn.Module):
     def forward(self, x):
         return self.network(x)
 
-nn = NeuralNetwork()
+model = NeuralNetwork()
 loss_fn = nn.MSELoss()
-optimiser = torch.optim.Adam(model.parameters(), lr=0.001)
+optimiser = Adam(model.parameters(), lr=0.001)
 
-epochs = 500
+epochs = 100
 for epoch in range(epochs):
     model.train()
     for batch_x, batch_y in train_dataloader:

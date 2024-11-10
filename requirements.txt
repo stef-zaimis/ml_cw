@@ -4,3 +4,4 @@ matplotlib
 seaborn
 scikit-image
 scikit-learn
+torch
