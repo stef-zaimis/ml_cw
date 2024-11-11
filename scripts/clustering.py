@@ -23,9 +23,18 @@ kmeans = KMeans(n_clusters=K, init='k-means++', random_state=42).fit(X_scaled)
 #print("K-means cluster centers:\n", kmeans.cluster_centers_)
 #print("K-means labels for the subset:\n", kmeans.labels_)
 
-# Code Task 2: Gaussian mixtures
+# Code Task 3: Gaussian mixtures
 gmm = GaussianMixture(n_components=K, max_iter=100, init_params='kmeans', tol=1e-3, random_state=42).fit(X_scaled)
 
 #print("Gaussian Mixture Model means:\n", gmm.means_)
 #print("Gaussian Mixture Model covariances:\n", gmm.covariances_)
 
+# Code Task 4: Random baseline
+random_labels = np.random.randint(0, K, size=len(X_train))
+
+kmeans_labels = kmeans.labels_
+gmm_labels = gmm.predict(X_scaled)
+
+print("K-means clustering labels:\n", kmeans_labels, " of length: ", len(kmeans_labels))
+print("GMM clustering labels:\n", gmm_labels, " of length: ", len(gmm_labels))
+print("Random baseline clustering labels:\n", random_labels, " of length: ", len(random_labels))
