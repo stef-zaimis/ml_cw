@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import arviz as az
 import pymc as pm
+import matplotlib.pyplot as plot
 
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
@@ -13,18 +14,19 @@ from torch import from_numpy
 # Load the training data
 data = pd.read_csv('/home/stefanos/uni/ml/cw/regression_train.txt', sep=" ", header=None)
 
-x_train = data[0].values.reshape(-1, 1)
+x_train = data[0].values
+x_reshaped = x_train.reshape(-1,1)
 y_train = data[1].values
 #print(x_train, y_train)
 
 # Code Task 10
 lin_reg = LinearRegression()
-lin_reg.fit(x_train, y_train)
+lin_reg.fit(x_reshaped, y_train)
 print("Coefficient (slope):", lin_reg.coef_)
 print("Intercept:", lin_reg.intercept_)
 
 # Code Task 11
-x_train_tensor = from_numpy(x_train).float()
+x_train_tensor = from_numpy(x_reshaped).float()
 y_train_tensor = from_numpy(y_train).float().view(-1, 1)
 
 train_dataset = TensorDataset(x_train_tensor, y_train_tensor)
@@ -82,7 +84,8 @@ with model:
     
     y_obs = pm.StudentT('y_obs', mu=y_est, sigma=sigma, nu=nu, observed=y_train)
     
-    trace = pm.sample(2000, tune=2000, return_inferencedata=True, target_accept=0.95)
+    #trace = pm.sample(2000, tune=2000, return_inferencedata=True, target_accept=0.95) # This is slow
+    trace =  pm.sample(1000, tune=1000, return_inferencedata=True, target_accept=0.9)
 
 print(az.summary(trace, round_to=2))
 
