@@ -5,3 +5,5 @@ seaborn
 scikit-image
 scikit-learn
 torch
+pymc
+arviz

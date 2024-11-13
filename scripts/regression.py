@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+import arviz as az
+import pymc as pm
 
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
@@ -61,3 +63,28 @@ for epoch in range(epochs):
 
     if (epoch+1)%50 == 0:
         print(f"Epoch [{epoch+1}/{epochs}], Loss: {loss.item():.4f}")
+
+# Code Task 12
+x_centered = x_train - np.mean(x_train)
+model = pm.Model()
+
+with model:
+    w0 = pm.Normal('w0', mu=0, sigma=100)
+    w1 = pm.Normal('w1', mu=0, sigma=100)
+    w2 = pm.Normal('w2', mu=0, sigma=100)
+    w3 = pm.Normal('w3', mu=0, sigma=100)
+
+    sigma = pm.HalfNormal('sigma', sigma=100)
+    
+    y_est = w0 + w1 * x_centered + w2 * x_centered**2 + w3 * x_centered**3
+    
+    nu = pm.Exponential('nu', lam=1/30)
+    
+    y_obs = pm.StudentT('y_obs', mu=y_est, sigma=sigma, nu=nu, observed=y_train)
+    
+    trace = pm.sample(2000, tune=2000, return_inferencedata=True, target_accept=0.95)
+
+print(az.summary(trace, round_to=2))
+
+az.plot_trace(trace)
+plt.show()
