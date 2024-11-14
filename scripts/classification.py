@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
+from sklearn.tree import DecisionTreeClassifier
 
 # Import covtype
 X, y = fetch_covtype(return_X_y=True, as_frame=True)
@@ -23,7 +24,16 @@ X_test_scaled = scaler.fit_transform(X_test)
 log_reg = LogisticRegression(max_iter=1000, solver='lbfgs', random_state=42)
 log_reg.fit(X_train_scaled, y_train)
 
-y_pred = log_reg.predict(X_test_scaled)
-accuracy = accuracy_score(y_test, y_pred)
+y_pred_logreg = log_reg.predict(X_test_scaled)
+accuracy_logreg = accuracy_score(y_test, y_pred_logreg)
 
-print(f"Log Reg Test Set Accurracy: {accuracy:}")
+#print(f"Log Reg Test Set Accurracy: {accuracy_logreg}")
+
+# Code Task 8
+tree_clf = DecisionTreeClassifier(random_state=42)
+tree_clf.fit(X_train_scaled, y_train)
+
+y_pred_tree = tree_clf.predict(X_test_scaled)
+accuracy_tree = accuracy_score(y_test, y_pred_tree)
+
+print(f"Tree Test Set Accuracy: {accuracy_tree}")
