@@ -5,6 +5,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import GradientBoostingClassifier
 
 # Import covtype
 X, y = fetch_covtype(return_X_y=True, as_frame=True)
@@ -40,87 +42,20 @@ print(f"Tree Test Set Accuracy: {accuracy_tree}")
 # Code Task 9
 # I will implement both bagging and boosting for now to see which one performs better and which one is more suitable (probaby random forest)
 
-X_train_np = X_train.values
-X_test_np = X_test.values
-y_train_np = y_train.values
-y_test_np = y_test.values
-
 # RANDOM FOREST
-num_models = 20
-sample_size = 2000
-feature_sample_size = None
-np.random.seed(0)
+random_forest = RandomForestClassifier(n_estimators=100, max_depth=15, max_features='sqrt', random_state=42)
+random_forest.fit(X_train_scaled, y_train)
 
-all_rf_models = []
-for m in range(num_models):
-    sample_idx = np.random.choice(X_train_np.shape[0], sample_size)
-    X_train_sample, y_train_sample = X_train_np[sample_idx], y_train_np[sample_idx]
-
-    rf_model = DecisionTreeClassifier(max_features=feature_sample_size)
-    rf_model.fit(X_train_sample, y_train_sample)
-
-    all_rf_models.append(rf_model)
-
-def random_forest_predict(X_test, models):
-    votes = np.zeros((X_test.shape[0], len(models)))
-    combined_predictions = np.zeros(X_test.shape[0])
-    
-    for idx, model in enumerate(models):
-        votes[:, idx] = model.predict(X_test)
-    
-    for test_point in range(votes.shape[0]):
-        combined_predictions[test_point] = np.bincount(np.int64(votes[test_point])).argmax()
-    
-    return combined_predictions
-
-rf_predictions = random_forest_predict(X_test_np, all_rf_models)
-rf_accuracy = np.count_nonzero(rf_predictions==np.int64(y_test_np))/y_test_np.shape[0]
+y_pred_rf = random_forest.predict(X_test_scaled)
+rf_accuracy = np.count_nonzero(y_pred_rf==np.int64(y_test))/y_test.shape[0]
 
 print(f"Bagging Test Set Accuracy: {rf_accuracy}")
 
 # GRADIENT BOOSTING
-num_boost_models = 50
-sample_size = 2000
-max_depth = 3
-np.random.seed(0)
+gradient_boost = GradientBoostingClassifier(n_estimators=100, learning_rate=0.1, max_depth=5, random_state=42)
+gradient_boost.fit(X_train, y_train)
 
-sample_weights = np.ones(X_train_np.shape[0])/X_train_np.shape[0]
-
-alphas = []
-all_boost_models = []
-
-for m in range(num_boost_models):
-    sample_idx = np.random.choice(X_train_np.shape[0], sample_size)
-    X_train_sample, y_train_sample = X_train_np[sample_idx], y_train_np[sample_idx]
-
-    boost_model = DecisionTreeClassifier(max_depth=max_depth)
-    boost_model.fit(X_train_sample, y_train_sample, sample_weight=sample_weights[sample_idx])
-    
-    predictions = boost_model.predict(X_train_np)
-    incorrect = (predictions != y_train_np)
-    error = np.dot(sample_weights, incorrect) / np.sum(sample_weights)
-    
-    alpha = 0.5*np.log((1-error)/(error + 1e-10))
-    alphas.append(alpha)
-
-    all_boost_models.append(boost_model)
-    
-    sample_weights *= np.exp(alpha*incorrect)
-    sample_weights /= np.sum(sample_weights)
-
-def boosting_predict(X_test, models, alphas):
-    votes = np.zeros((X_test.shape[0], len(models)))
-    combined_predictions = np.zeros(X_test.shape[0])
-
-    for idx, model in enumerate(models):
-        votes[:, idx] = model.predict(X_test)
-
-    for test_point in range(len(votes)):
-        combined_predictions[test_point] = np.bincount(np.int64(votes[test_point]), alphas).argmax()
-    
-    return combined_predictions
-
-boost_predictions = boosting_predict(X_test_np, all_boost_models, alphas)
-boost_accuracy = np.count_nonzero(boost_predictions==np.int64(y_test_np))/y_test_np.shape[0]
+y_pred_boost = gradient_boost.predict(X_test)
+boost_accuracy = np.count_nonzero(y_pred_boost==np.int64(y_test))/y_test.shape[0]
 
 print(f"Boosting Test SEt Accuracy: {boost_accuracy}")
