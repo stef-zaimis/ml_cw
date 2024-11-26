@@ -1,47 +1,38 @@
 import numpy as np
 from hmmlearn import hmm
 
-GRID_HEIGHT=3
-GRID_WIDTH=3
+rewards = np.loadtxt('/home/stefanos/uni/ml/cw/rewards.txt').astype(int).reshape(-1, 1)
 
-with open("/home/stefanos/uni/ml/cw/rewards.txt", "r") as file:
-    rewards = np.array([int(line.strip()) for line in file])
+n_states = 9 
 
-n_states = GRID_HEIGHT*GRID_WIDTH
-n_observations = 3
+# Code Task 14:
+model = hmm.MultinomialHMM(n_components=n_states, n_iter=100, tol=0.01, init_params="ste", params="ste", verbose=True)
 
-model = hmm.MultinomialHMM(n_components=n_states, n_iter=100, tol=1e-4, random_state=42)
-
-trans_prob = np.zeros((n_states, n_states))
-
-for i in range(GRID_HEIGHT):
-    for j in range(GRID_WIDTH):
-        neighbours = []
-        if i>0: neighbours.append((i-1, j))
-        if i<2: neighbours.append((i+1, j))
-        if j>0: neighbours.append((i,j-1))
-        if j<2: neighbours.append((i,j+1))
-
-        idx = i*GRID_WIDTH+j
-        prob = 1/len(neighbours)
-        for ni, nj in neighbours:
-            neighbour_idx = ni*GRID_WIDTH + nj
-            trans_prob[idx, neighbour_idx] = prob
-
-start_prob = np.full(n_states, 1/n_states)
-emit_prob = np.random.rand(n_states, n_observations)
-emit_prob /= emit_prob.sum(axis=1, keepdims=True)
-
-model.startprob_ = start_prob
-model.transmat_ = trans_prob
-model.emissionprob_ = emit_prob
-
-rewards = rewards.reshape(-1, 1)
 model.fit(rewards)
 
-print(f"Learned Starting Probabilities: {model.startprob_}")
-print(f"\nLearned Transition Probabilities: {model.transmat_}")
-print(f"\nLearned Emission Probabilities: {model.emissionprob_}")
+print("Learned Initial State Probabilities (startprob_):\n", model.startprob_)
+print("\nLearned Transition Matrix (transmat_):\n", model.transmat_)
+print("\nLearned Emission Probabilities (emissionprob_):\n", model.emissionprob_)
 
-hidden_states = model.predict(rewards)
-print(f"\nPreddicted Hidden States: {hidden_states}")
+# Code Task 15:
+def neighbors(state):
+    x, y = divmod(state, 3)
+    moves = [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
+    return [nx * 3 + ny for nx, ny in moves if 0 <= nx < 3 and 0 <= ny < 3]
+
+true_transmat = np.zeros((n_states, n_states))
+for state in range(n_states):
+    nbrs = neighbors(state)
+    prob = 1 / len(nbrs) if nbrs else 0
+    for nbr in nbrs:
+        true_transmat[state, nbr] = prob
+
+model_true_transmat = hmm.MultinomialHMM(n_components=n_states, n_iter=100, tol=0.01, init_params="se", params="se", verbose=True)
+model_true_transmat.transmat_ = true_transmat
+
+model_true_transmat.fit(rewards)
+
+print("\nLearned Initial State Probabilities (startprob_):\n", model_true_transmat.startprob_)
+print("\nFixed Transition Matrix (transmat_):\n", model_true_transmat.transmat_)
+print("\nLearned Emission Probabilities (emissionprob_):\n", model_true_transmat.emissionprob_)
+
