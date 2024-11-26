@@ -53,7 +53,7 @@ nn_model = NeuralNetwork()
 loss_fn = nn.MSELoss()
 optimiser = Adam(nn_model.parameters(), lr=0.001)
 
-epochs = 100
+epochs = 450 
 for epoch in range(epochs):
     nn_model.train()
     for batch_x, batch_y in train_dataloader:
@@ -87,12 +87,12 @@ with reg_model:
     likelihood = pm.StudentT('y_obs', mu=y_est, sigma=sigma, nu=nu, observed=y_train)
     
     #sampler = pm.NUTS()
-    idata = pm.sample(num_samples, tune=2000, return_inferencedata=True, target_accept=0.95, progressbar=True) # This is slow
+    idata = pm.sample(num_samples, tune=2000, return_inferencedata=True, target_accept=0.95, progressbar=True)
 
 print(az.summary(idata, round_to=2))
 
-az.plot_trace(idata)
-plt.show()
+#az.plot_trace(idata)
+#plt.show()
 
 
 # Code Task 13:
@@ -113,3 +113,48 @@ with no_grad():
 mse_nn = mean_squared_error(y_test, y_pred_nn)
 print("Neural Network Test MSE:", mse_nn)
 
+# Plots for Report Task 8:
+linreg_train_pred = lin_reg.predict(x_reshaped)
+with no_grad():
+    nn_train_pred = nn_model(x_train_tensor).numpy()
+# Linear Regression - Training Set
+plt.figure()
+plt.scatter(x_train, y_train, label="Training Data", color="blue", alpha=0.7)
+plt.plot(x_train, linreg_train_pred, label="Linear Regression Prediction", color="red")
+plt.title("Linear Regression - Training Set")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.legend()
+plt.savefig("linear_regression_training.png")
+
+# Linear Regression - Test Set
+plt.figure()
+plt.scatter(x_test, y_test, label="Test Data", color="green", alpha=0.7)
+plt.plot(x_test, linreg_pred, label="Linear Regression Prediction", color="red")
+plt.title("Linear Regression - Test Set")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.legend()
+plt.savefig("linear_regression_test.png")
+
+# Neural Network - Training Set
+plt.figure()
+plt.scatter(x_train, y_train, label="Training Data", color="blue", alpha=0.7)
+plt.plot(x_train, nn_train_pred, label="Neural Network Prediction", color="orange")
+plt.title("Neural Network - Training Set")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.legend()
+plt.savefig("neural_network_training.png")
+
+# Neural Network - Test Set
+plt.figure()
+plt.scatter(x_test, y_test, label="Test Data", color="green", alpha=0.7)
+plt.plot(x_test, y_pred_nn, label="Neural Network Prediction", color="orange")
+plt.title("Neural Network - Test Set")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.legend()
+plt.savefig("neural_network_test.png")
+
+plt.show()
