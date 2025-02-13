@@ -1,7 +1,7 @@
 import numpy as np
 from hmmlearn import hmm
 
-rewards = np.loadtxt('/home/stefanos/uni/ml/cw/rewards.txt').astype(int).reshape(-1, 1)
+rewards = np.loadtxt('rewards.txt').astype(int).reshape(-1, 1)
 
 n_states = 9 
 

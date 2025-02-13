@@ -2,7 +2,7 @@ import numpy as np
 from sklearn.datasets import fetch_covtype
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.tree import DecisionTreeClassifier
 
@@ -30,10 +30,10 @@ print(f"Log Reg Test Set Accurracy: {accuracy_logreg}")
 
 # Code Task 8
 tree_clf = DecisionTreeClassifier(max_depth=None, random_state=42)
-tree_clf_cv_scores = cross_val_score(
-    tree_clf, X_train, y_train, cv=5, scoring="accuracy"
-)
-print(f"Decision Tree Cross-Validation Accuracy: {tree_clf_cv_scores.mean():.4f}")
+#tree_clf_cv_scores = cross_val_score(
+#    tree_clf, X_train, y_train, cv=5, scoring="accuracy"
+#)
+#print(f"Decision Tree Cross-Validation Accuracy: {tree_clf_cv_scores.mean():.4f}")
 
 
 tree_clf.fit(X_train, y_train)
@@ -50,10 +50,10 @@ print(f"Tree Test Set Accuracy: {accuracy_tree}")
 random_forest = RandomForestClassifier(
     n_estimators=100, max_depth=None, max_features="sqrt", random_state=42
 )
-rf_cv_scores = cross_val_score(
-    random_forest, X_train, y_train, cv=5, scoring="accuracy"
-)
-print(f"Random Forest Cross-Validation Accuracy: {rf_cv_scores.mean():.4f}")
+#rf_cv_scores = cross_val_score(
+#    random_forest, X_train, y_train, cv=5, scoring="accuracy"
+#)
+#print(f"Random Forest Cross-Validation Accuracy: {rf_cv_scores.mean():.4f}")
 
 random_forest.fit(X_train_scaled, y_train)
 
